@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script>
+        var json_from_flask = '{{ draw_array|tojson }}';
+		var lines = ""; //Lines to actually pass into download function
+      </script>
+    <title>Route Render</title>
+    <link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='osm_fav_ico.png') }}">
+      <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+    <script src="https://openlayers.org/en/v4.6.5/build/ol.js"></script>
+
+  <style type="text/css">
+        .ol-dragbox {
+            background-color: rgba(255, 255, 255, 0.4);
+            border-color: cornflowerblue;
+        }
+
+        .buttons {
+            position: absolute;
+            left: 0;
+            right: 0;
+            margin: auto;
+            z-index: 1000;
+            padding: 8px 8px;
+            bottom: 4px;
+        }
+
+        .button {
+            background-color: cornflowerblue;    /* royalblue is hover color? */
+            color: white;
+            border: 0px solid rgba(0,0,0,0.2);
+            border-bottom-width: 2px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 16px;
+            font-family: Arial;
+            transition-duration: 0.2s;
+            cursor: pointer;
+            padding: 12px 28px;     /* height width */
+        }
+
+        .button:hover:enabled {
+            filter: brightness(80%);
+            {#background-color: #e3e3e3;#}
+            color: white;
+        }
+
+        .button:active:enabled {
+            filter: brightness(60%);
+            color: white;
+        }
+
+        .button:active:disabled {
+            filter: brightness(60%);
+            color: white;
+        }
+
+        .button:disabled {
+            background-color: slategray;
+            {#color: white;#}
+        }
+
+        #home {
+            margin-right: 16px;
+        }
+  </style>
+
+  </head>
+  <body>
+  <div id="map" class="map" style="width: 100%; height: 100%; position: fixed; padding-bottom: 15px"></div>
+    <div class="buttons" align="center">
+        <button class="button" id="home" onclick="location.href = '{{ url_for('bounding_box') }}';">Draw Again</button>
+        <button class="button" id="download_button" onclick="getName();">Download</button>
+    </div>
+    <script>
+        function drawStreets(){
+          json_stripped = "";
+          json_stripped = json_from_flask.replace(/([^0-9 \-\.]+)/g,'');
+          split_into_just_floats = "";
+          split_into_just_floats = json_stripped.split(" ");
+          streets = [];
+          first_node = [split_into_just_floats[0],split_into_just_floats[1]];
+          for(var i =0; i < split_into_just_floats.length -3; i+=4){
+            var line_coords = [[split_into_just_floats[i],split_into_just_floats[i+1]],
+                [split_into_just_floats[i+2],split_into_just_floats[i+3]]];
+            streets.push(line_coords);
+             lines = lines + [split_into_just_floats[i],split_into_just_floats[i+1]] +'\r\n';
+          }
+          lines = lines + first_node + '\r\n';
+
+          tourStreetsMerc = [];
+          for(i=0;i<streets.length;i++){
+            tourStreetsMerc.push([]);
+            for(var j=0;j<streets[i].length;j++){
+              for(var k=0;k<streets[i][j].length;k++){
+                  streets[i][j][k] = parseFloat(streets[i][j][k]);
+              }
+              tourStreetsMerc[i].push([]);
+              tourStreetsMerc[i][j] = ol.proj.fromLonLat(streets[i][j]);
+            }
+          }
+
+          geojsonObjectBlue = {
+            'type': 'FeatureCollection',
+            'crs': {
+              'type': 'name',
+              'properties': {
+                'name': 'EPSG:3857'
+              }
+            },
+            'features': []
+          };
+
+          tourSource = new ol.source.Vector({});
+          bluePointSource = new ol.source.Vector();
+          bluePointSource.addFeature(new ol.Feature(new ol.geom.Circle(tourStreetsMerc[0][0], 10)));
+          for(i=0;i<tourStreetsMerc.length;i++){
+            tourSource.addFeature(new ol.Feature(new ol.geom.LineString(tourStreetsMerc[i])));
+          }
+
+          //ANIMATION//////////////////////////
+          var animationSource;
+          var addLater = function(feature, timeout) {
+            window.setTimeout(function() {
+              feature.set('start', new Date().getTime());
+              animationSource.addFeature(feature);
+            }, timeout);
+          };
+          var pointsPerMs = 0.000000001;
+          var animateStreets = function(event) {
+            var vectorContext = event.vectorContext;
+            var frameState = event.frameState;
+            //vectorContext.setStyle(style);
+
+            var features = animationSource.getFeatures();
+            for (var i = 0; i < features.length; i++) {
+              var feature = features[i];
+              if (!feature.get('finished')) {
+                // only draw the lines for which the animation has not finished yet
+                var coords = feature.getGeometry().getCoordinates();
+                var elapsedTime = frameState.time - feature.get('start');
+                var elapsedPoints = elapsedTime * pointsPerMs;
+                if (elapsedPoints >= coords.length) {
+                  feature.set('finished', true);
+                }
+                var maxIndex = Math.min(elapsedPoints, coords.length);
+                var currentLine = new ol.geom.LineString(coords.slice(0, maxIndex));
+                vectorContext.drawGeometry(currentLine);
+              }
+            }
+            // tell OpenLayers to continue the animation
+            map.render();
+          };
+          animationSource = new ol.source.Vector({
+            loader: function() {
+                for (var i = 0; i < tourStreetsMerc.length; i++) {
+                    var street = tourStreetsMerc[i];
+                    var line = new ol.geom.LineString(street);
+
+                    var feature = new ol.Feature({
+                        geometry: line,
+                        finished: false
+                    });
+                    // add the feature with a delay so that the animation
+                    // for all features does not start at the same time
+                    addLater(feature, i * 5000 / tourStreetsMerc.length);
+
+                    map.once('postrender', animateStreets);
+                }
+            }
+          });
+          /////////////////////////////////////
+
+          var blueLayer = new ol.layer.Vector({
+            source: animationSource,
+            style: new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: 'blue',
+                    width: 2
+                })
+            })
+          });
+
+          var redOpaqueLayer = new ol.layer.Vector({
+              source: tourSource,
+              style: new ol.style.Style({
+                  stroke: new ol.style.Stroke({
+                      color: 'rgba(255, 0, 0, 0.3)',
+                      width: 2
+                  })
+              })
+          });
+
+          var bluePointLayer = new ol.layer.Vector({
+              source: bluePointSource,
+              style: new ol.style.Style({
+                  stroke: new ol.style.Stroke({
+                      color: 'blue',
+                      width: 1
+                  }),
+                  fill: new ol.style.Fill({
+                      color: 'blue'
+                  })
+              })
+          });
+
+          // add the longitude latitude for your desired starting point here
+          var fortbendLonLat = [-95.8143, 29.5693];
+          var fortbendWebMercator = ol.proj.fromLonLat(fortbendLonLat);
+
+          mapView = new ol.View({
+              center: fortbendWebMercator,
+              zoom: 12
+          });
+
+          var extent = tourSource.getExtent();
+
+          var map = new ol.Map({
+            layers: [
+              new ol.layer.Tile({
+                source: new ol.source.OSM()
+              }),
+              blueLayer,
+              redOpaqueLayer,
+              bluePointLayer
+            ],
+            target: 'map',
+            controls: ol.control.defaults({
+              attributionOptions: {
+                collapsible: false
+              }
+            }),
+            view: mapView
+          });
+
+          mapView.fit(extent, map.getSize());
+
+        }
+
+        drawStreets();
+		function download(filename, text) { //prints test into file named filename
+            var element = document.createElement('a');
+			
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename + ".txt");
+ 
+            element.style.display = 'none';
+            document.body.appendChild(element);
+ 
+            element.click();
+ 
+            document.body.removeChild(element);
+		} //button is dwn-btn location, Route_Plan is just the filename
+		function getName(){
+			var file_name = prompt("Please enter the name of your file", "Route Plan");
+			if (file_name != null) {
+				download(file_name,lines);
+			}
+		}
+    </script>
+  </body>
+</html>

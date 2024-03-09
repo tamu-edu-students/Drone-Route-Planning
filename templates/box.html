@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:height="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Neighborhood Selection</title>
+    <link rel="stylesheet" href="https://openlayers.org/en/v4.6.4/css/ol.css" type="text/css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='osm_fav_ico.png') }}">
+    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+    <script src="https://openlayers.org/en/v4.6.4/build/ol.js"></script>
+    <!--<script src="http://code.jquery.com_jquery-2.0.0.js"></script>-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <style type="text/css">
+        .ol-dragbox {
+            background-color: rgba(255, 255, 255, 0.4);
+            border-color: cornflowerblue;
+        }
+
+        .buttons {
+            position: absolute;
+            left: 0;
+            right: 0;
+            margin: auto;
+            z-index: 4000;
+            padding: 8px 8px;
+            bottom: 4px;
+        }
+
+        .button {
+            background-color: cornflowerblue;    /* royalblue is hover color? */
+            color: white;
+            border: 0px solid rgba(0,0,0,0.2);
+            border-bottom-width: 2px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 16px;
+            font-family: Arial;
+            transition-duration: 0.2s;
+            cursor: pointer;
+            padding: 12px 28px;     /* height width */
+        }
+
+        .button:hover:enabled {
+            filter: brightness(80%);
+            {#background-color: #e3e3e3;#}
+            color: white;
+        }
+
+        .button:active:enabled {
+            filter: brightness(60%);
+            color: white;
+        }
+
+        .button:active:disabled {
+            filter: brightness(60%);
+            color: white;
+        }
+
+        .button:disabled {
+            background-color: slategray;
+            {#color: white;#}
+        }
+
+        #start_button {
+            margin-right: 12px;
+        }
+
+        #stop_button {
+            margin-right: 12px;
+        }
+
+        .swal-text {
+            font-family: Arial
+        }
+
+        .swal-button {
+            background-color: cornflowerblue;    /* royalblue is hover color? */
+            color: white;
+            border: 0px solid rgba(0,0,0,0.2);
+            border-bottom-width: 2px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 16px;
+            font-family: Arial;
+            transition-duration: 0.2s;
+            cursor: pointer;
+            padding: 12px 28px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map" class="map" style="width: 100%; height: 100%; position: fixed; padding-bottom: 15px"></div>
+    <div class="buttons" align="center">
+        <button class="button" id="start_button" onclick="start_drawing_box()" >Draw Bounding Box</button>
+        <button class="button" id="stop_button" onclick="stop_drawing_box()">Stop Drawing</button>
+        <button class="button" id="extract_button" onclick="location.href = '{{ url_for('extract') }}';">Extract Route</button>
+    </div>
+
+<script>
+    var verified = false;
+    var start_button = document.getElementById("start_button");
+    var stop_button = document.getElementById("stop_button");
+    var extract_button = document.getElementById("extract_button");
+    stop_button.disabled = true;
+    extract_button.disabled = true;
+    // This is where the map is linked in from the internet
+    var vectorSource = new ol.source.Vector({     //This is important. Gives us the map we draw the bbox on.
+        url: 'https://openlayers.org/en/v4.6.4/examples/data/geojson/countries.geojson',
+        format: new ol.format.GeoJSON()
+    });
+    // For testing purposes, this uses web mercator projections to render the center
+    // Here is the info for Fort Bend County, NOTE: ***longitude then latitude***
+    var fortbendLonLat = [-95.8143, 29.5693];
+    var fortbendWebMercator = ol.proj.fromLonLat(fortbendLonLat);
+    // These are the parameters for controlling the map initially
+    var map = new ol.Map({
+        layers: [
+            new ol.layer.Tile({
+                source: new ol.source.OSM()
+            }),
+            new ol.layer.Vector({
+                source: vectorSource
+            })
+        ],
+        target: 'map',
+        view: new ol.View({
+            // center is where the center of the map renders
+            center: fortbendWebMercator,
+            // zoom is how close it is, the bigger the number, the more the zoom (INTS ONLY)
+            zoom: 12
+        })
+    });
+
+    var dragPan = null;
+    map.getInteractions().forEach(function (interaction) {
+        if (interaction instanceof ol.interaction.DragPan) {
+            dragPan = interaction
+        }
+    });
+
+    // a DragBox interaction used to select features by drawing boxes
+    var dragBox = new ol.interaction.DragBox({
+        condition: ol.events.condition.noModifierKeys   //platformModifierKeyOnly
+    });
+
+    dragBox.on('boxstart', function() {
+        vectorSource.clear();
+      });
+
+    dragBox.on('boxend', function () {
+        // features that intersect the box are added to the collection of
+        // selected features
+        var extent = dragBox.getGeometry().getExtent();
+        var verification_extent = extent;
+        var bbox = ol.proj.transformExtent(extent, ol.proj.get('EPSG:3857'), ol.proj.get('EPSG:4326'));     //EPSG:4326 is a coordinate system related to lat-lon, used by Google. EPSG:3857 is another coordinate system that OpenLayers extents use by default
+        var bbox_json = [];
+
+        var polyFeature = new ol.Feature({
+            geometry: new ol.geom.Polygon([
+                [
+                    [extent[0], extent[3]],
+                    [extent[0], extent[1]],
+                    [extent[2], extent[1]],
+                    [extent[2], extent[3]]
+                ]
+            ])
+        });
+        vectorSource.addFeature(polyFeature);
+
+        // DO NOT TOUCH
+        bbox_json.push({
+            "min_x": (bbox[0].toString()),
+            "min_y": (bbox[1].toString()),
+            "max_x": (bbox[2].toString()),
+            "max_y": (bbox[3].toString())
+        });
+        // Selecting OK on the alert post dragbox draw triggers this
+         swal({
+            text: "Is the selected bounding box okay?",
+            buttons: {
+                cancel: {
+                    value: false,
+                    visible: true
+                },
+                confirm: {
+                    value: true,
+                    visible: true
+                }
+            },
+            closeOnClickOutside: false
+        }).then((v) => {
+                if (v) {
+                     $.ajax({
+                        type: 'POST',
+                        url: '/receiver',
+                        data: JSON.stringify(bbox_json),
+                        contentType: "application/json",
+                        dataType: 'json'
+                     });
+                    stop_drawing_box();
+                    start_button.disabled = true;
+                    stop_button.disabled = true;
+                    extract_button.disabled = false;
+                } else {
+                    vectorSource.clear();
+                    stop_drawing_box();
+                }
+        });
+    });
+
+    function start_drawing_box() {
+        map.removeInteraction(dragPan);
+        map.addInteraction(dragBox);
+        start_button.disabled = true;
+        stop_button.disabled = false;
+    }
+
+     function stop_drawing_box() {
+        map.removeInteraction(dragBox);
+        map.addInteraction(dragPan);
+        start_button.disabled = false;
+        stop_button.disabled = true;
+    }
+</script>
+</body>
+</html>

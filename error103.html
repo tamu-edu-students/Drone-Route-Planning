@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Timeout Error</title>
+        <link rel="shortcut icon" href="{{ url_for('static', filename='osm_fav_ico.png') }}">
+    <style>
+        .button {
+                background-color: indianred;    /* royalblue is hover color? */
+                color: white;
+                border: 0px solid rgba(0,0,0,0.2);
+                border-bottom-width: 2px;
+                border-radius: 5px;
+                text-align: center;
+                font-size: 16px;
+                font-family: Arial;
+                transition-duration: 0.2s;
+                cursor: pointer;
+                padding: 12px 28px;     /* height width */
+        }
+
+        .button:hover:enabled {
+               filter: brightness(80%);
+               {#background-color: #e3e3e3;#}
+               color: white;
+        }
+
+        .button:active:enabled {
+               filter: brightness(60%);
+               color: white;
+        }
+
+        .notice {
+            left: 0;
+            right: 0;
+            top: 45%;
+            bottom: 0;
+            position: absolute;
+            margin: 0 auto;
+            padding: 12px 0px
+        }
+
+        .frown {
+            left: 0;
+            right: 0;
+            top: 25%;
+            bottom: 0;
+            position: absolute;
+            margin: 0 auto;
+            padding: 12px 0px;
+            z-index: -1
+        }
+
+        #words {
+            margin: auto;
+            font-size: 40px;
+        }
+
+        #home {
+            margin-top: 12px;
+        }
+
+        #face {
+            opacity: .05
+        }
+
+    </style>
+
+</head>
+<body>
+<div class="notice" align="center">
+    <font id="words" size="4" color="gray" face="Arial">Server Timeout Error: Try including fewer roads in your bounding box.</font>
+    <br>
+    <button class="button" id="home" onclick="location.href = '/';">Try Again</button>
+</div>
+
+<div class="frown" align="center">
+    <img id="face" width=20% src="data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTYuMC4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjY0cHgiIGhlaWdodD0iNjRweCIgdmlld0JveD0iMCAwIDQzOC41MzMgNDM4LjUzMyIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgNDM4LjUzMyA0MzguNTMzOyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CjxnPgoJPGc+CgkJPHBhdGggZD0iTTQwOS4xMzMsMTA5LjIwM2MtMTkuNjA4LTMzLjU5Mi00Ni4yMDUtNjAuMTg5LTc5Ljc5OC03OS43OTZDMjk1LjczNiw5LjgwMSwyNTkuMDU4LDAsMjE5LjI3MywwICAgIGMtMzkuNzgxLDAtNzYuNDcsOS44MDEtMTEwLjA2MywyOS40MDdjLTMzLjU5NSwxOS42MDQtNjAuMTkyLDQ2LjIwMS03OS44LDc5Ljc5NkM5LjgwMSwxNDIuOCwwLDE3OS40ODksMCwyMTkuMjY3ICAgIGMwLDM5Ljc4LDkuODA0LDc2LjQ2MywyOS40MDcsMTEwLjA2MmMxOS42MDcsMzMuNTkyLDQ2LjIwNCw2MC4xODksNzkuNzk5LDc5Ljc5OGMzMy41OTcsMTkuNjA1LDcwLjI4MywyOS40MDcsMTEwLjA2MywyOS40MDcgICAgczc2LjQ3LTkuODAyLDExMC4wNjUtMjkuNDA3YzMzLjU5My0xOS42MDIsNjAuMTg5LTQ2LjIwNiw3OS43OTUtNzkuNzk4YzE5LjYwMy0zMy41OTYsMjkuNDAzLTcwLjI4NCwyOS40MDMtMTEwLjA2MiAgICBDNDM4LjUzMywxNzkuNDg1LDQyOC43MzIsMTQyLjc5NSw0MDkuMTMzLDEwOS4yMDN6IE0zODcuNDM0LDI5MC4yMTNjLTkuNzA5LDIyLjU1Ni0yMi42OTYsNDEuOTctMzguOTY5LDU4LjI0NSAgICBjLTE2LjI3MSwxNi4yNjktMzUuNjg5LDI5LjI2LTU4LjI0NSwzOC45NjVjLTIyLjU1NSw5LjcxMi00Ni4yMDIsMTQuNTY0LTcwLjk0NiwxNC41NjRjLTI0Ljc0NCwwLTQ4LjM5MS00Ljg1My03MC45NDgtMTQuNTY0ICAgIGMtMjIuNTU0LTkuNzA1LTQxLjk3MS0yMi42OTYtNTguMjQ1LTM4Ljk2NWMtMTYuMjY5LTE2LjI3NS0yOS4yNTktMzUuNjg3LTM4Ljk3LTU4LjI0NSAgICBjLTkuNzA3LTIyLjU1Mi0xNC41NjItNDYuMjA2LTE0LjU2Mi03MC45NDZjMC0yNC43NDQsNC44NTQtNDguMzkxLDE0LjU2Mi03MC45NDhjOS43MDctMjIuNTU0LDIyLjY5Ny00MS45NjgsMzguOTctNTguMjQ1ICAgIGMxNi4yNzQtMTYuMjY5LDM1LjY5MS0yOS4yNiw1OC4yNDUtMzguOTdjMjIuNTU0LTkuNzA0LDQ2LjIwNS0xNC41NTgsNzAuOTQ4LTE0LjU1OGMyNC43NCwwLDQ4LjM5NSw0Ljg1MSw3MC45NDYsMTQuNTU4ICAgIGMyMi41NTYsOS43MDcsNDEuOTcsMjIuNjk4LDU4LjI0NSwzOC45N2MxNi4yNzIsMTYuMjc0LDI5LjI2LDM1LjY4OCwzOC45NjksNTguMjQ1YzkuNzA5LDIyLjU1NCwxNC41NjQsNDYuMjAxLDE0LjU2NCw3MC45NDggICAgQzQwMi4wMDIsMjQ0LjAxMSwzOTcuMTQzLDI2Ny42NjQsMzg3LjQzNCwyOTAuMjEzeiIgZmlsbD0iIzAwMDAwMCIvPgoJCTxwYXRoIGQ9Ik0yODQuMzY4LDI1OC42NjhjLTE5LjIxOS0xNC4wODYtNDAuOTI2LTIxLjEyOS02NS4wOTUtMjEuMTI5Yy0yNC4xNzIsMC00NS44NzEsNy4wMzktNjUuMDk2LDIxLjEyOSAgICBjLTE5LjIyNCwxNC4wODUtMzIuMzU4LDMyLjY0MS0zOS4zOTcsNTUuNjcxYy0xLjUyMSw0Ljc1Ny0xLjE0Myw5LjM4MSwxLjE0MSwxMy44NDdjMi4yODYsNC40NjksNS44OTgsNy40NjcsMTAuODUsOC45OTMgICAgYzQuNzU4LDEuNTI2LDkuMzczLDEuMTQzLDEzLjg0Ni0xLjE0NGM0LjQ3MS0yLjI4NSw3LjQ2Ny01Ljg5OSw4Ljk5MS0xMC44NDhjNC43NTktMTUuMjM1LDEzLjU2Mi0yNy41NTYsMjYuNDA5LTM2Ljk3OSAgICBjMTIuODQ3LTkuNDE4LDI3LjI2My0xNC4xMjcsNDMuMjUyLTE0LjEyN2MxNS45ODcsMCwzMC40MTIsNC43MTIsNDMuMjUxLDE0LjEyN2MxMi44NTQsOS40MjQsMjEuNjU1LDIxLjc0NCwyNi40MTIsMzYuOTc5ICAgIGMxLjUyLDQuOTQ4LDQuNTY0LDguNTYyLDkuMTM0LDEwLjg0OGM0LjU2OCwyLjI4Niw5LjIzNiwyLjY3LDEzLjk4OSwxLjE0NGM0Ljc2MS0xLjUyNiw4LjI3OC00LjUyNCwxMC41NjQtOC45OTMgICAgYzIuMjg2LTQuNDY2LDIuNjY5LTkuMDksMS4xNC0xMy44NDdDMzE2LjcyOSwyOTEuMzEyLDMwMy41OTEsMjcyLjc1LDI4NC4zNjgsMjU4LjY2OHoiIGZpbGw9IiMwMDAwMDAiLz4KCQk8cGF0aCBkPSJNMTQ2LjE4MSwxODIuNzI1YzEwLjA4NSwwLDE4LjY5OS0zLjU3NiwyNS44MzctMTAuNzA5YzcuMTM5LTcuMTM1LDEwLjcwOC0xNS43NDksMTAuNzA4LTI1LjgzNyAgICBjMC0xMC4wODktMy41NjktMTguNjk5LTEwLjcwOC0yNS44MzdzLTE1Ljc1Mi0xMC43MDktMjUuODM3LTEwLjcwOWMtMTAuMDg4LDAtMTguNzAyLDMuNTcxLTI1Ljg0LDEwLjcwOSAgICBjLTcuMTM1LDcuMTM5LTEwLjcwNywxNS43NDktMTAuNzA3LDI1LjgzN2MwLDEwLjA4OCwzLjU2OCwxOC43MDIsMTAuNzA3LDI1LjgzN0MxMjcuNDgyLDE3OS4xNTIsMTM2LjA5MywxODIuNzI1LDE0Ni4xODEsMTgyLjcyNSAgICB6IiBmaWxsPSIjMDAwMDAwIi8+CgkJPHBhdGggZD0iTTI5Mi4zNTksMTA5LjYzMWMtMTAuMDg5LDAtMTguNzA2LDMuNTcxLTI1Ljg0NSwxMC43MDljLTcuMTMyLDcuMTM5LTEwLjcwOCwxNS43NDktMTAuNzA4LDI1LjgzNyAgICBjMCwxMC4wODgsMy41NzYsMTguNzAyLDEwLjcwOCwyNS44MzdjNy4xMzksNy4xMzcsMTUuNzU2LDEwLjcwOSwyNS44NDUsMTAuNzA5YzEwLjA4MSwwLDE4LjY5OC0zLjU3NiwyNS44MzctMTAuNzA5ICAgIGM3LjEzOS03LjEzNSwxMC43MDgtMTUuNzQ5LDEwLjcwOC0yNS44MzdjMC0xMC4wODktMy41NjktMTguNjk5LTEwLjcwOC0yNS44MzdTMzAyLjQ0LDEwOS42MzEsMjkyLjM1OSwxMDkuNjMxeiIgZmlsbD0iIzAwMDAwMCIvPgoJPC9nPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+Cjwvc3ZnPgo=" />
+</div>
+
+</body>
