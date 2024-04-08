@@ -3,7 +3,7 @@
   <head>
       <script>
         var json_from_flask = '{{ draw_array|tojson }}';
-		var lines = ""; //Lines to actually pass into download function
+		    var lines = ""; //Lines to actually pass into download function
       </script>
     <title>Route Render</title>
     <link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css">
@@ -77,8 +77,10 @@
     </div>
     <script>
         function drawStreets(){
+          console.log(json_from_flask)
           json_stripped = "";
           json_stripped = json_from_flask.replace(/([^0-9 \-\.]+)/g,'');
+          
           split_into_just_floats = "";
           split_into_just_floats = json_stripped.split(" ");
           streets = [];
@@ -242,17 +244,33 @@
 
         drawStreets();
 		function download(filename, text) { //prints test into file named filename
-            var element = document.createElement('a');
+            // var element = document.createElement('a');
 			
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-            element.setAttribute('download', filename + ".txt");
+            // element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            // element.setAttribute('download', filename + ".txt");
  
-            element.style.display = 'none';
-            document.body.appendChild(element);
+            // element.style.display = 'none';
+            // document.body.appendChild(element);
  
-            element.click();
+            // element.click();
  
-            document.body.removeChild(element);
+            // document.body.removeChild(element);
+
+            fetch('/convertCoordsToKML', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ array: text, filename: filename})
+            })
+            .then(response => response.text())
+            .then(filename => {
+                // Redirect to download URL
+                window.location.href = '/download/' + filename + '.kml';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
 		} //button is dwn-btn location, Route_Plan is just the filename
 		function getName(){
 			var file_name = prompt("Please enter the name of your file", "Route Plan");
