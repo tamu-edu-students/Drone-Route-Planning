@@ -68,14 +68,12 @@ def receiver():
 def convertCoordsToKML():
     data = request.get_json()
     coords = data['array']
-    filename = data['filename']
-    kml.newpoint(name="Kirstenbosch", coords=[(18,18)])  # lon, lat, optional height
-    kml.save(f"{filename}.kml")
-    return filename
 
-@app.route('/download/<filename>')
-def downloadKML(filename):
-    return send_file(filename, as_attachment=True)
+    coords = [(i, j) for i,j in coords]
+    for coord in coords:
+        kml.newpoint(coords=[coord])  # lon, lat, optional height
+
+    return kml.kml()
 
 
 ## App Handler ##
