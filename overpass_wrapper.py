@@ -100,30 +100,14 @@ class overpy_extractor(object):
     # Interacts with overpass, gets all the residential roads
     def extract(self):
         ## overpass extract ##
-        query_string = """(way["highway"="residential"](""" \
+        query_string = """(way[highway](""" \
                         + str(self.bounding_box[0]) + """,""" \
                         + str(self.bounding_box[1]) + """,""" \
                         + str(self.bounding_box[2]) + """,""" \
-                        + str(self.bounding_box[3]) + """); node["highway"="residential"](""" \
+                        + str(self.bounding_box[3]) + """); node(""" \
                         + str(self.bounding_box[0]) + """,""" \
                         + str(self.bounding_box[1]) + """,""" \
                         + str(self.bounding_box[2]) + """,""" \
-                        + str(self.bounding_box[3]) + """); way["highway"="secondary"](""" \
-                        + str(self.bounding_box[0]) + """, """ \
-                        + str(self.bounding_box[1]) + """, """ \
-                        + str(self.bounding_box[2]) + """, """ \
-                        + str(self.bounding_box[3]) + """); node["highway"="secondary"](""" \
-                        + str(self.bounding_box[0]) + """, """ \
-                        + str(self.bounding_box[1]) + """, """ \
-                        + str(self.bounding_box[2]) + """, """ \
-                        + str(self.bounding_box[3]) + """); way["highway"="tertiary"](""" \
-                        + str(self.bounding_box[0]) + """, """ \
-                        + str(self.bounding_box[1]) + """, """ \
-                        + str(self.bounding_box[2]) + """, """ \
-                        + str(self.bounding_box[3]) + """); node["highway"="tertiary"](""" \
-                        + str(self.bounding_box[0]) + """, """ \
-                        + str(self.bounding_box[1]) + """, """ \
-                        + str(self.bounding_box[2]) + """, """ \
                         + str(self.bounding_box[3]) + """); ); (._;>;); out body;"""
         result = self.api.query(query_string)  # calls overpass api with query
 
