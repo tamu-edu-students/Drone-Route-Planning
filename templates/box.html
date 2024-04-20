@@ -109,17 +109,15 @@
         url: 'https://openlayers.org/en/v4.6.4/examples/data/geojson/countries.geojson',
         format: new ol.format.GeoJSON()
     });
-    // For testing purposes, this uses web mercator projections to render the center
-    // Here is the info for Fort Bend County, NOTE: ***longitude then latitude***
-    var fortbendLonLat = [-95.8143, 29.5693];
     
-    var fortbendWebMercator = ol.proj.fromLonLat(fortbendLonLat);
     // These are the parameters for controlling the map initially
     var map;
     var dragPan = null;
 
-    navigator.geolocation.getCurrentPosition(function(location) {
-        console.log(location.coords.longitude, location.coords.latitude)
+
+    navigator.geolocation.getCurrentPosition(location => {
+        coords = ol.proj.fromLonLat([location.coords.longitude, location.coords.latitude]);
+    
         map =new ol.Map({
             layers: [
                 new ol.layer.Tile({
@@ -132,7 +130,32 @@
             target: 'map',
             view: new ol.View({
                 // center is where the center of the map renders
-                center: ol.proj.fromLonLat([location.coords.longitude, location.coords.latitude]),
+                center: coords,
+                // zoom is how close it is, the bigger the number, the more the zoom (INTS ONLY)
+                zoom: 16
+            })
+        });
+        map.getInteractions().forEach(function (interaction) {
+            if (interaction instanceof ol.interaction.DragPan) {
+                dragPan = interaction
+            }
+        });
+    }, error => {
+        coords = ol.proj.fromLonLat([-96.338554543744, 30.615947004470165]); // Peterson Building TAMU
+
+        map =new ol.Map({
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                }),
+                new ol.layer.Vector({
+                    source: vectorSource
+                })
+            ],
+            target: 'map',
+            view: new ol.View({
+                // center is where the center of the map renders
+                center: coords,
                 // zoom is how close it is, the bigger the number, the more the zoom (INTS ONLY)
                 zoom: 16
             })
