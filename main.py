@@ -69,9 +69,9 @@ def convertCoordsToKML():
     data = request.get_json()
     coords = data['array']
 
-    coords = [(i, j) for i,j in coords]
-    for coord in coords:
-        kml.newpoint(coords=[coord])  # lon, lat, optional height
+    coords = [(i, j, 20) for i,j in coords]
+
+    kml.newlinestring(coords=coords)  # lon, lat, optional height
 
     return kml.kml()
 
@@ -79,4 +79,4 @@ def convertCoordsToKML():
 ## App Handler ##
 # function that starts web app
 if __name__ == '__main__':
-    app.run(port=5001)
+    app.run(port=5000, host='0.0.0.0')

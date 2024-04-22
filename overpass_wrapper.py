@@ -128,7 +128,7 @@ class overpy_extractor(object):
             (._;>;); 
             out body;
             """
-        print(query_string)
+
         result = self.api.query(query_string)  # calls overpass api with query
 
         ## convert to way_s list and euler_coords ##
