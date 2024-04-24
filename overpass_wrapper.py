@@ -100,31 +100,27 @@ class overpy_extractor(object):
     # Interacts with overpass, gets all the residential roads
     def extract(self):
         ## overpass extract ##
-        query_string = """(way["highway"="residential"](""" \
-                        + str(self.bounding_box[0]) + """,""" \
-                        + str(self.bounding_box[1]) + """,""" \
-                        + str(self.bounding_box[2]) + """,""" \
-                        + str(self.bounding_box[3]) + """); node["highway"="residential"](""" \
-                        + str(self.bounding_box[0]) + """,""" \
-                        + str(self.bounding_box[1]) + """,""" \
-                        + str(self.bounding_box[2]) + """,""" \
-                        + str(self.bounding_box[3]) + """); way["highway"="secondary"](""" \
-                        + str(self.bounding_box[0]) + """, """ \
-                        + str(self.bounding_box[1]) + """, """ \
-                        + str(self.bounding_box[2]) + """, """ \
-                        + str(self.bounding_box[3]) + """); node["highway"="secondary"](""" \
-                        + str(self.bounding_box[0]) + """, """ \
-                        + str(self.bounding_box[1]) + """, """ \
-                        + str(self.bounding_box[2]) + """, """ \
-                        + str(self.bounding_box[3]) + """); way["highway"="tertiary"](""" \
-                        + str(self.bounding_box[0]) + """, """ \
-                        + str(self.bounding_box[1]) + """, """ \
-                        + str(self.bounding_box[2]) + """, """ \
-                        + str(self.bounding_box[3]) + """); node["highway"="tertiary"](""" \
-                        + str(self.bounding_box[0]) + """, """ \
-                        + str(self.bounding_box[1]) + """, """ \
-                        + str(self.bounding_box[2]) + """, """ \
-                        + str(self.bounding_box[3]) + """); ); (._;>;); out body;"""
+        bbox = str(self.bounding_box[0]) + "," + str(self.bounding_box[1]) + "," + str(self.bounding_box[2]) + "," + str(self.bounding_box[3])
+        
+        query_string = f"""(
+                way[highway=motorway]({bbox}); node[highway=motorway]({bbox});
+                way[highway=trunk]({bbox}); node[highway=trunk]({bbox});
+                way[highway=primary]({bbox}); node[highway=primary]({bbox}); 
+                way[highway=secondary]({bbox}); node[highway=secondary]({bbox}); 
+                way[highway=tertiary]({bbox}); node[highway=tertiary]({bbox}); 
+                way[highway=unclassified]({bbox}); node[highway=unclassified]({bbox});
+                way[highway=residential]({bbox}); node[highway=residential]({bbox}); 
+
+                way[highway=living_street]({bbox}); node[highway=living_street]({bbox});
+                way[highway=service]({bbox}); node[highway=service]({bbox});
+                way[highway=pedestrian]({bbox}); node[highway=pedestrian]({bbox});
+                way[highway=track]({bbox}); node[highway=track]({bbox});
+
+            ); 
+            (._;>;); 
+            out body;
+            """
+
         result = self.api.query(query_string)  # calls overpass api with query
 
         ## convert to way_s list and euler_coords ##

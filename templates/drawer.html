@@ -3,7 +3,7 @@
   <head>
       <script>
         var json_from_flask = '{{ draw_array|tojson }}';
-		var lines = ""; //Lines to actually pass into download function
+		    var lines = []; //Lines to actually pass into download function
       </script>
     <title>Route Render</title>
     <link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css">
@@ -79,6 +79,7 @@
         function drawStreets(){
           json_stripped = "";
           json_stripped = json_from_flask.replace(/([^0-9 \-\.]+)/g,'');
+          
           split_into_just_floats = "";
           split_into_just_floats = json_stripped.split(" ");
           streets = [];
@@ -87,9 +88,11 @@
             var line_coords = [[split_into_just_floats[i],split_into_just_floats[i+1]],
                 [split_into_just_floats[i+2],split_into_just_floats[i+3]]];
             streets.push(line_coords);
-             lines = lines + [split_into_just_floats[i],split_into_just_floats[i+1]] +'\r\n';
+
+            lines.push([split_into_just_floats[i], split_into_just_floats[i+1]])
+
           }
-          lines = lines + first_node + '\r\n';
+          lines.push(first_node);
 
           tourStreetsMerc = [];
           for(i=0;i<streets.length;i++){
@@ -241,18 +244,29 @@
         }
 
         drawStreets();
-		function download(filename, text) { //prints test into file named filename
-            var element = document.createElement('a');
+		function download(filename, text) { 
+
+            fetch('/convertCoordsToKML', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ array: text, filename: filename})
+            })
+            .then(response => response.text())
+            .then(kmlContent => {
+              var element = document.createElement('a');
 			
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-            element.setAttribute('download', filename + ".txt");
- 
-            element.style.display = 'none';
-            document.body.appendChild(element);
- 
-            element.click();
- 
-            document.body.removeChild(element);
+              element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(kmlContent));
+              element.setAttribute('download', filename + ".kml");
+              element.style.display = 'none';
+              document.body.appendChild(element);
+              element.click();
+              document.body.removeChild(element);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
 		} //button is dwn-btn location, Route_Plan is just the filename
 		function getName(){
 			var file_name = prompt("Please enter the name of your file", "Route Plan");

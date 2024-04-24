@@ -1,11 +1,14 @@
 ## Imports ###
 from flask import Flask, render_template, request, redirect, url_for
 from overpass_wrapper import overpy_extractor
+import simplekml
 
 ## Global Variables ##
 app = Flask(__name__)
 
 bounded_box = [1.0, 1.0, 1.0, 1.0]
+
+kml = simplekml.Kml()
 
 
 ## Web Pages ##
@@ -61,8 +64,19 @@ def receiver():
     bounded_box = [bbox['min_y'], bbox['min_x'], bbox['max_y'], bbox['max_x']]  # DO NOT ALTER
     return ''
 
+@app.route('/convertCoordsToKML', methods=['POST'])
+def convertCoordsToKML():
+    data = request.get_json()
+    coords = data['array']
+
+    coords = [(i, j, 20) for i,j in coords]
+
+    kml.newlinestring(coords=coords)  # lon, lat, optional height
+
+    return kml.kml()
+
 
 ## App Handler ##
 # function that starts web app
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5000, host='0.0.0.0')
