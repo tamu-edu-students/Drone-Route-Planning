@@ -1,5 +1,5 @@
 ## Imports ###
-from flask import Flask, render_template, request, redirect, url_for, send_file
+from flask import Flask, render_template, request, redirect, url_for
 from overpass_wrapper import overpy_extractor
 import simplekml
 

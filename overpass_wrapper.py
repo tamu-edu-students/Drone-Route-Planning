@@ -101,14 +101,6 @@ class overpy_extractor(object):
     def extract(self):
         ## overpass extract ##
         bbox = str(self.bounding_box[0]) + "," + str(self.bounding_box[1]) + "," + str(self.bounding_box[2]) + "," + str(self.bounding_box[3])
-        query_string = f"""
-            (
-                way[highway]({bbox}); 
-                node({bbox});
-            ); 
-            (._;>;); 
-            out body;
-            """
         
         query_string = f"""(
                 way[highway=motorway]({bbox}); node[highway=motorway]({bbox});

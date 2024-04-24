@@ -103,6 +103,7 @@
     var stop_button = document.getElementById("stop_button");
     var extract_button = document.getElementById("extract_button");
     stop_button.disabled = true;
+    stop_button.style.display = "none";
     extract_button.disabled = true;
     // This is where the map is linked in from the internet
     var vectorSource = new ol.source.Vector({     //This is important. Gives us the map we draw the bbox on.
@@ -243,14 +244,18 @@
         map.removeInteraction(dragPan);
         map.addInteraction(dragBox);
         start_button.disabled = true;
+        start_button.style.display = "none";
         stop_button.disabled = false;
+        stop_button.style.display = "inline-block";
     }
 
      function stop_drawing_box() {
         map.removeInteraction(dragBox);
         map.addInteraction(dragPan);
         start_button.disabled = false;
+        start_button.style.display = "inline-block";
         stop_button.disabled = true;
+        stop_button.style.display = "none";
     }
 </script>
 </body>
