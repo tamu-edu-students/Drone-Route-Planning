@@ -8,9 +8,6 @@ app = Flask(__name__)
 
 bounded_box = [1.0, 1.0, 1.0, 1.0]
 
-kml = simplekml.Kml()
-
-
 ## Web Pages ##
 
 # root webpage
@@ -34,6 +31,8 @@ def extract():
         return redirect(url_for("error102"))
     else:
         draw_array = []
+        print("coord_dict")
+        print(coord_dict)
         # converting coord_dict into the format need for route rendering
         for i in range(0, len(coord_dict) - 1):
             line = [[str(coord_dict[i][1]), str(coord_dict[i][0])],
@@ -66,14 +65,16 @@ def receiver():
 
 @app.route('/convertCoordsToKML', methods=['POST'])
 def convertCoordsToKML():
+    kml = simplekml.Kml()
     data = request.get_json()
     coords = data['array']
 
     coords = [(i, j, 20) for i,j in coords]
 
-    kml.newlinestring(coords=coords)  # lon, lat, optional height
-
-    return kml.kml()
+    for i, coord in enumerate(coords):
+        kml.newpoint(name=str(i), coords=[coord])  # lon, lat, optional height
+    response = kml.kml()
+    return response
 
 
 ## App Handler ##
