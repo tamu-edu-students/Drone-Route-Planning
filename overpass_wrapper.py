@@ -94,9 +94,8 @@ class overpy_extractor(object):
         for i, j in g:
             g1.append((j, i))
         # MERGE THE GRAPH AND ITS REVERSE: READY FOR EULER ALGORITHM
-        print("look here")
-        print(g)
-        print(g1)
+
+        # This is commented because it was causing the drone to fly back and forth on the same road
         # g = g + g1
 
         return g
@@ -127,15 +126,11 @@ class overpy_extractor(object):
 
         result = self.api.query(query_string)  # calls overpass api with query
 
-        print("results")
-        print(result.ways)
-
         ## convert to way_s list and euler_coords ##
         euler_coord_list =[]
         way_s = []
         for way in result.ways:
             a = []
-            print(way.nodes)
             for node in way.nodes:
                 euler_c = euler_coord(node.lat, node.lon, node.id)
                 if(self.helper_func_in_bbox_smart(euler_c)):
@@ -144,9 +139,6 @@ class overpy_extractor(object):
             way_s.append(a)
         del result
 
-        print("way_s")
-        print(way_s)
-
         ## handling error ##
         if(len(way_s) < 2):
             return 101
@@ -154,14 +146,7 @@ class overpy_extractor(object):
             return 102
         ## tour generation ##
         g = self.adjacency_list_builder(way_s)
-
-        print("g")
-        print(g)
-
         t = self.find_euler_tour(g)
-
-        print("t")
-        print(t)
 
         ## sending it back to the server to be drawn ##
         new_euler_dict = []

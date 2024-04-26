@@ -21,6 +21,11 @@ def bounding_box():
 @app.route('/drawMap')
 def extract():
     global bounded_box
+
+    # fixes error when refreshing page
+    if bounded_box == [1.0, 1.0, 1.0, 1.0]:
+        return redirect(url_for("bounding_box"))
+    
     op = overpy_extractor(bounded_box)
     coord_dict = []
     coord_dict = op.extract()
@@ -31,8 +36,6 @@ def extract():
         return redirect(url_for("error102"))
     else:
         draw_array = []
-        print("coord_dict")
-        print(coord_dict)
         # converting coord_dict into the format need for route rendering
         for i in range(0, len(coord_dict) - 1):
             line = [[str(coord_dict[i][1]), str(coord_dict[i][0])],
@@ -68,8 +71,9 @@ def convertCoordsToKML():
     kml = simplekml.Kml()
     data = request.get_json()
     coords = data['array']
+    height = data['height']
 
-    coords = [(i, j, 20) for i,j in coords]
+    coords = [(i, j, height) for i,j in coords]
 
     for i, coord in enumerate(coords):
         kml.newpoint(name=str(i), coords=[coord])  # lon, lat, optional height

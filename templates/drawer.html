@@ -244,14 +244,14 @@
         }
 
         drawStreets();
-		function download(filename, text) { 
+		function download(filename, text, height) { 
 
             fetch('/convertCoordsToKML', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ array: text, filename: filename})
+                body: JSON.stringify({ array: text, filename: filename, height: height})
             })
             .then(response => response.text())
             .then(kmlContent => {
@@ -270,8 +270,9 @@
 		} //button is dwn-btn location, Route_Plan is just the filename
 		function getName(){
 			var file_name = prompt("Please enter the name of your file", "Route Plan");
-			if (file_name != null) {
-				download(file_name,lines);
+      var height = parseFloat(prompt("Please enter the height for this mission (in meters)", "30"));
+			if (file_name != null && height != NaN && height > 0) {
+				download(file_name,lines, height);
 			}
 		}
     </script>
