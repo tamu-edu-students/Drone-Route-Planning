@@ -94,7 +94,10 @@ class overpy_extractor(object):
         for i, j in g:
             g1.append((j, i))
         # MERGE THE GRAPH AND ITS REVERSE: READY FOR EULER ALGORITHM
-        g = g + g1
+
+        # This is commented because it was causing the drone to fly back and forth on the same road
+        # g = g + g1
+
         return g
 
     # Interacts with overpass, gets all the residential roads

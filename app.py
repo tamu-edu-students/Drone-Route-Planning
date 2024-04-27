@@ -8,9 +8,6 @@ app = Flask(__name__)
 
 bounded_box = [1.0, 1.0, 1.0, 1.0]
 
-kml = simplekml.Kml()
-
-
 ## Web Pages ##
 
 # root webpage
@@ -24,6 +21,11 @@ def bounding_box():
 @app.route('/drawMap')
 def extract():
     global bounded_box
+
+    # fixes error when refreshing page
+    if bounded_box == [1.0, 1.0, 1.0, 1.0]:
+        return redirect(url_for("bounding_box"))
+    
     op = overpy_extractor(bounded_box)
     coord_dict = []
     coord_dict = op.extract()
@@ -66,14 +68,21 @@ def receiver():
 
 @app.route('/convertCoordsToKML', methods=['POST'])
 def convertCoordsToKML():
+    kml = simplekml.Kml()
     data = request.get_json()
     coords = data['array']
+    height = data['height']
 
-    coords = [(i, j, 20) for i,j in coords]
+    coords = [(i, j, height) for i,j in coords]
 
-    kml.newlinestring(coords=coords)  # lon, lat, optional height
+    # Needed to create mission in GSPro
+    kml.newlinestring(coords=coords)
 
-    return kml.kml()
+    # Needed to view mission points in Google Earth / GSPro
+    for i, coord in enumerate(coords):
+        kml.newpoint(name=str(i), coords=[coord])  # lon, lat, optional height
+    response = kml.kml()
+    return response
 
 
 ## App Handler ##
