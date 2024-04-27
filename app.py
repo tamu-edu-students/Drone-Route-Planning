@@ -75,6 +75,10 @@ def convertCoordsToKML():
 
     coords = [(i, j, height) for i,j in coords]
 
+    # Needed to create mission in GSPro
+    kml.newlinestring(coords=coords)
+
+    # Needed to view mission points in Google Earth / GSPro
     for i, coord in enumerate(coords):
         kml.newpoint(name=str(i), coords=[coord])  # lon, lat, optional height
     response = kml.kml()
