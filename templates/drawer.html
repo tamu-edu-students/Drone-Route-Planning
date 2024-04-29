@@ -257,7 +257,7 @@
             .then(kmlContent => {
               var element = document.createElement('a');
 			
-              element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(kmlContent));
+              element.setAttribute('href', 'data:application/vnd.google-earth.kml+xml;,' + encodeURIComponent(kmlContent));
               element.setAttribute('download', filename + ".kml");
               element.style.display = 'none';
               document.body.appendChild(element);

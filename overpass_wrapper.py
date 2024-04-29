@@ -68,11 +68,13 @@ class overpy_extractor(object):
     def adjacency_list_builder(self, coord_list):
         # ADJACENCY LIST
         adj = {}
-        # GO THROUGH THE ARRAY OF ALL WAYS AND INITIALIZE A LIST FOR ALL OF THE NODES
+        
+        # Initialize adjacency list with all nodes
         for w in coord_list:
             for i in range(0, len(w)):
                 adj[w[i]] = []
-        # GO THROUGH ALL OF THE WAYS AND ADD ALL OF THE ADJACENT NODES FOR A SPECIFIC NODE
+        
+        # Append the adjacent nodes to each node in dictionary
         for w in coord_list:
             for i in range(0, len(w)):
                 if i == 0 and i < len(w)-1:
@@ -81,22 +83,16 @@ class overpy_extractor(object):
                     adj[w[i]] = adj[w[i]] + [w[i - 1]]
                 else:
                     adj[w[i]] = adj[w[i]] + [w[i - 1]] + [w[i + 1]]
-        # DEDUP THE REPEATED ADJACENT NODES FOR EACH NODE
+        
+        # remove duplicates from adjacency list
         for e in adj:
             adj[e] = list(set(adj[e]))
-        # MAKE A GRAPH FROM ADJACENCY LIST
+
+        # convert adjacency list to graph
         g = []
         for k in adj:
             for v in adj[k]:
                 g.append((k, v))
-        # MAKE THE REVERSE OF THE GRAPH
-        g1 = []
-        for i, j in g:
-            g1.append((j, i))
-        # MERGE THE GRAPH AND ITS REVERSE: READY FOR EULER ALGORITHM
-
-        # This is commented because it was causing the drone to fly back and forth on the same road
-        # g = g + g1
 
         return g
 
