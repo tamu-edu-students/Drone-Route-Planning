@@ -80,7 +80,7 @@ def convertCoordsToKML():
 
     # Needed to view mission points in Google Earth / GSPro
     for i, coord in enumerate(coords):
-        kml.newpoint(name=str(i), coords=[coord])  # lon, lat, optional height
+        kml.newpoint(name=str(i+1), coords=[coord])  # lon, lat, optional height
     response = kml.kml()
     return response
 
